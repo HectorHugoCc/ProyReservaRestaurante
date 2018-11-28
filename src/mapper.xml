@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="dawi">
+	
+	<!-- 
+		- Las clases de entidades se mapean en el myibatis 
+		
+		- Se relaciona las columnas de la tabla con los
+		  atributos del bean
+	-->
+	<!-- 
+	
+		parameterType : parámetro del método que va completar el SQL
+	 -->
+	 
+	<resultMap  id="mapConcurso" type="concursoBeanIbatis">
+		<id property="idConcurso" column="idConcurso"/>
+		<result property="nombre" column="nombre"/>
+		<result property="fechaInicio" column="fechaInicio"/>
+		<result property="fechaFin" column="fechaFin"/>
+		<result property="estado" column="estado"/>
+	</resultMap>
+	
+	<resultMap id="mapDeporte" type="deporteBeanIbatis" >
+		<id property="idDeporte" column="idDeporte"/><!-- PK -->
+		<result property="nombre" column="nombre"/>
+	</resultMap>
+	
+	<resultMap id="mapModalidad" type="modalidadBeanIbatis" >
+		<id property="idModalidad" column="idModalidad"/><!-- PK -->
+		<result property="nombre" column="nombre"/>		<!-- Columna -->
+		<result property="edadMinima" column="edadMinima"/>
+		<result property="edadMaxima" column="edadMaxima"/>
+		<result property="numHombres" column="numHombres"/>
+		<result property="numMujeres" column="numMujeres"/>
+		<association property="deporte" column="idDeporte" 
+								select="SQL_buscaDeporte"/><!-- FK -->
+	</resultMap>
+	
+	
+	
+	<resultMap id="mapTipo" type="tipoBeanIbatis" >
+		<id property="idtipo" column="idtipo"/><!-- PK -->
+		<result property="descripcion" column="descripcion"/>
+	</resultMap>
+	
+		
+	<resultMap id="mapDistrito" type="distritoBeanIbatis" >
+		<id property="idDistrito" column="idDistrito"/><!-- PK -->
+		<result property="nombre" column="nombre"/>
+	</resultMap>
+	
+	<resultMap id="mapRestaurant" type="restaurantBeanIbatis" >
+		<id property="idRestaurant" column="idRestaurant"/><!-- PK -->
+		<result property="nomRest" column="nomRest"/>		<!-- Columna -->
+		<result property="tenedores" column="tenedores"/>
+		<result property="ticket" column="ticket"/>
+		<result property="horario" column="horario"/>
+		<result property="capacidad" column="capacidad"/>
+		<result property="estacionamiento" column="estacionamiento"/>
+		<association property="tipo" column="idtipo" 
+								select="SQL_buscaTipo"/><!-- FK -->
+	</resultMap>
+	
+
+	
+	
+	<!-- 
+		INICIO CRUD CONCURSO 
+	-->
+	
+	
+
+	<delete id="SQL_eliminaConcurso" parameterType="int">
+		delete from concurso where idconcurso = #{idConcurso}
+	</delete>
+	
+	<select id="SQL_listaConcurso" resultMap="mapConcurso" 
+								   parameterType="java.lang.String">
+			select * from concurso where nombre like #{filtro}
+	</select>	
+	
+	<insert id="SQL_insertaConcurso" parameterType="concursoBeanIbatis">
+		insert into concurso 
+		values(null,#{nombre},#{fechaInicio},#{fechaFin},#{estado})
+	</insert>
+	
+	<update id="SQL_actualizaConcurso" parameterType="concursoBeanIbatis">
+		update concurso set
+		nombre = #{nombre},
+		fechaFin = #{fechaFin},
+		fechaInicio = #{fechaInicio},
+		estado = #{estado}
+		where idconcurso = #{idConcurso}
+	</update>
+	
+	<!-- 
+		INICIO CRUD MODALIDAD 
+	-->
+	<!-- 
+		Este select permite llenar el bean deporte
+		Se llama desde mapModalidad 
+	-->
+	<select id="SQL_buscaDeporte" resultMap="mapDeporte">
+		select * from deporte where iddeporte= #{id}
+	</select>
+	
+	<select id="SQL_listaDeporte" resultMap="mapDeporte">
+		select * from deporte
+	</select>
+	
+	<insert id="SQL_insertaModalidad" parameterType="modalidadBeanIbatis">
+		INSERT INTO modalidad VALUES(null,
+			#{nombre},#{numHombres},
+			#{numMujeres},#{edadMaxima},
+			#{edadMinima},#{deporte.idDeporte})
+	</insert>
+	
+	<select id="SQL_consultaModalidad" resultMap="mapModalidad"
+									   parameterType="java.lang.String">
+		select * from modalidad where nombre like #{filtro}
+	</select>
+	
+	<update id="SQL_actualizaModalidad" parameterType="modalidadBeanIbatis">
+			UPDATE modalidad SET nombre = #{nombre},
+			numHombres = #{numHombres},numMujeres = #{numMujeres},
+			edadMaxima = #{edadMaxima},edadMinima = #{edadMinima},
+			edadMaxima = #{edadMaxima},idDeporte = #{deporte.idDeporte}
+			where idModalidad = #{idModalidad}
+	</update>
+	
+	<delete id="SQL_eliminaModalidad" parameterType="int">
+			DELETE FROM modalidad where idModalidad = #{idModalidad}
+	</delete>
+	
+	<!-- 
+		INICIO CRUD RESTAURANT 
+	-->
+	<!-- 
+		Este select permite llenar el bean tipo
+		Se llama desde mapRestaurant 
+	-->
+	<select id="SQL_buscaTipo" resultMap="mapTipo">
+		select * from tipo where idtipo= #{idtipo}
+	</select>
+	
+	<select id="SQL_listaTipo" resultMap="mapTipo">
+		select * from tipo
+	</select>
+	
+	
+	<select id="SQL_listaRest" resultType="restaurantBeanIbatis">
+				select
+						idRestaurant as idRestaurant,
+						nomRest as nomRest,
+						tenedores as tenedores,
+						ticket as ticket,
+						tipo as tipo,
+						horario as horario,
+						capacidad as capacidad,
+						estacionamiento as estacionamiento
+				from
+					restaurant		
+	</select>
+	
+	<select id="SQL_restaurantPorPK" parameterType="int" resultType="restaurantBeanIbatis">
+				select
+						idRestaurant as idRestaurant,
+						fotos as fotosBytes
+				from
+					restaurant
+				where
+					idRestaurant = #{id}			
+	</select>
+	
+		
+	
+	<insert id="SQL_insertaUsuario" parameterType="usuarioBeanIbatis">
+		insert into usuario values(null,
+								   #{nombre},
+								   #{apellidos},
+								   #{fechaNacimiento},
+								   #{sexo},
+								   #{login},
+								   #{password},
+								   #{correo},
+								   #{fotosBytes})
+	</insert>
+		
+		<insert id="SQL_insertaRest" parameterType="restaurantBeanIbatis">
+		insert into restaurant values(null,
+								   #{nomRest},
+								   #{tenedores},
+								   #{ticket},
+								   #{tipo},
+								   #{horario},
+								   #{capacidad},
+								   #{estacionamiento},
+								   #{fotosBytes})
+	</insert>
+		
+
+	<!--  <insert id="SQL_insertaRestaurant" parameterType="restaurantBeanIbatis">
+		INSERT INTO restaurant VALUES(null,
+			#{nomRest},#{tenedores},
+			#{ticket},#{tipo.idtipo},#{horario},#{capacidad},#{estacionamiento})
+	</insert>-->
+	
+	<select id="SQL_consultaRestaurant" resultMap="mapRestaurant"
+									   parameterType="java.lang.String">
+		select * from restaurant where nomRest like #{filtro}
+	</select>
+	
+	<update id="SQL_actualizaRestaurant" parameterType="restaurantBeanIbatis">
+			UPDATE restaurant SET nomRest = #{nomRest},
+			tenedores = #{tenedores},ticket = #{ticket},
+			idtipo = #{tipo.idtipo},horario = #{horario}, capacidad = #{capacidad}, estacionamiento = #{estacionamiento} 
+			where idRestaurant = #{idRestaurant}
+	</update>
+	
+	<select id="SQL_listaRestauranteVarios" parameterType="filtroBeanIbatis"
+									resultMap="mapRestaurant">
+			SELECT * from restaurant 
+			where nomRest like #{nombre}
+			
+			<if test="ticket > 0">
+					and ticket >= #{ticket}
+			</if>
+			<if test="tenedores > 0">
+					and tenedores >= #{tenedores}
+			</if>
+	</select>
+	
+	
+	<delete id="SQL_eliminaRestaurant" parameterType="int">
+			DELETE FROM restaurant where idRestaurant = #{idRestaurant}
+	</delete>
+	
+	
+	<!-- Login -->
+	<select id="SQL_login" parameterType="filtroBeanIbatis" resultType="usuarioBeanIbatis">
+			select nombre as nombre, 
+				   apellidos as apellidos,
+				   sexo as sexo,
+				   login as login,
+				   fechaNacimiento as fechaNacimiento,
+				   correo as correo
+			from usuario 
+			where login = #{usuario} and password = #{clave}
+	</select>
+	
+</mapper>
+
+
+
+
+
+
+
